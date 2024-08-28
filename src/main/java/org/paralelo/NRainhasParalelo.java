@@ -28,15 +28,24 @@ public class NRainhasParalelo {
         // Lista para armazenar as threads
         List<Thread> threads = new ArrayList<>();
 
-        // Instancia o print writer para escrever o arquivo com a primeira solução encontrada
-        PrintWriter ps = new PrintWriter(
-                System.getProperty("user.dir")
-                        + "/src/main/resources/Resultado N Rainhas Paralelo.txt");
-
         // Cria e inicia uma thread para cada linha inicial possível
         for (int i = 0; i < n; i++) {
             int linhaInicial = i;
-            Thread thread = new Thread(() -> resolveRainhas(linhaInicial, n, ps));
+            Thread thread = new Thread(() -> {
+                try {
+                    // Instancia o print writer para escrever as soluções em arquivos por thread instanciada
+                    PrintWriter pst = new PrintWriter(
+                            System.getProperty("user.dir")
+                                    + "/src/main/resources/Resultado N Rainhas Paralelo T" + (linhaInicial + 1)
+                                    + ".txt");
+
+                    resolveRainhas(linhaInicial, n, pst);
+                    
+                    pst.close();
+                } catch (FileNotFoundException e) {
+                    System.out.print("Arquivo não encontrado: " + e);
+                }
+            });
             threads.add(thread);
             thread.start();
         }
@@ -58,13 +67,10 @@ public class NRainhasParalelo {
 
         // Exibe o tempo de execução
         NRainhasUtil.tempoExecucao(inicioTempo, fimTempo);
-
-        // Encerra a escrita do arquivo
-        ps.close();
     }
 
     // Método que resolve onde colocar as rainhas e conta o número de soluções
-    private static void resolveRainhas(int linhaInicial, int n, PrintWriter ps) {
+    private static void resolveRainhas(int linhaInicial, int n, PrintWriter ps) throws FileNotFoundException {
         // Cria um novo tabuleiro para cada thread, assim não há risco de convergência
         int[][] tabuleiro = new int[n][n];
 
@@ -75,19 +81,20 @@ public class NRainhasParalelo {
         resolveRainhasRecursivo(tabuleiro, 1, ps);
     }
 
-    private static boolean resolveRainhasRecursivo(int[][] tabuleiro, int col, PrintWriter ps) {
+    private static boolean resolveRainhasRecursivo(int[][] tabuleiro, int col, PrintWriter ps)
+            throws FileNotFoundException {
         int n = tabuleiro.length;
 
         // Se todas as rainhas forem colocadas, conta a solução e retorna verdadeiro
         if (col >= n) {
+            // Para mostrar a primeira solução encontrada
+            NRainhasUtil.tabuleiro(tabuleiro, ps, contadorSolucoes);
+
             // Contador sincronizado para evitar erros na soma
             synchronized (NRainhasParalelo.class) {
                 contadorSolucoes++;
             }
-            // Para mostrar a primeira solução encontrada
-            if(contadorSolucoes == 1)
-                NRainhasUtil.tabuleiro(tabuleiro, ps, contadorSolucoes);
-
+        
             return true;
         }
 
@@ -102,7 +109,8 @@ public class NRainhasParalelo {
                 // Tenta colocar a rainha na próxima coluna
                 solucao = resolveRainhasRecursivo(tabuleiro, col + 1, ps) || solucao;
 
-                // Se colocar a rainha na posição (i, col) não leva a uma solução, remove a rainha da posição (i, col)
+                // Se colocar a rainha na posição (i, col) não leva a uma solução, remove a
+                // rainha da posição (i, col)
                 tabuleiro[i][col] = 0;
             }
         }

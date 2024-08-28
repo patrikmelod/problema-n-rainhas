@@ -17,7 +17,7 @@ public class NRainhasParaleloPlus {
 
     private static int contadorSolucoes = 0;
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         // Input do valor de N (quantidade de rainhas, linhas e colunas)
         String input = JOptionPane.showInputDialog("Digite o valor de N para o problema das N Rainhas:");
         int n = Integer.parseInt(input);
@@ -28,18 +28,26 @@ public class NRainhasParaleloPlus {
         // Lista para armazenar as threads
         List<Thread> threads = new ArrayList<>();
 
-        // Instancia o print writer para escrever o arquivo com a primeira solução encontrada
-        PrintWriter ps = new PrintWriter(
-                System.getProperty("user.dir")
-                        + "/src/main/resources/Resultado N Rainhas Paralelo Plus.txt");
-
         // Cria e inicia uma thread para cada configuração das duas primeiras colunas
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-
                 int linhaPrimeiraRainha = i;
                 int linhaSegundaRainha = j;
-                Thread thread = new Thread(() -> resolveRainhas(linhaPrimeiraRainha, linhaSegundaRainha, n, ps));
+                Thread thread = new Thread(() -> {
+                    try {
+                        // Instancia o print writer para escrever as soluções em arquivos por thread instanciada
+                        PrintWriter pst = new PrintWriter(
+                                System.getProperty("user.dir")
+                                        + "/src/main/resources/Resultado N Rainhas Paralelo Plus T" + (linhaPrimeiraRainha + 1) + (linhaSegundaRainha + 1)
+                                        + ".txt");
+
+                        resolveRainhas(linhaPrimeiraRainha, linhaSegundaRainha, n, pst);
+
+                        pst.close();
+                    } catch (FileNotFoundException e) {
+                        System.out.print("Arquivo não encontrado: " + e);
+                    }
+                });
                 threads.add(thread);
                 thread.start();
             }
@@ -62,9 +70,6 @@ public class NRainhasParaleloPlus {
 
         // Exibe o tempo de execução
         NRainhasUtil.tempoExecucao(inicioTempo, fimTempo);
-
-        // Encerra a escrita do arquivo
-        ps.close();
     }
 
     // Método que resolve onde colocar as rainhas e conta o número de soluções
@@ -88,12 +93,12 @@ public class NRainhasParaleloPlus {
 
         // Se todas as rainhas forem colocadas, conta a solução e retorna verdadeiro
         if (col >= n) {
+            NRainhasUtil.tabuleiro(tabuleiro, ps, contadorSolucoes);
             synchronized (NRainhasParalelo.class) { // Sincronizado para evitar condições de corrida
                 contadorSolucoes++;
             }
             // Para mostrar a primeira solução encontrada
-            if(contadorSolucoes == 1)
-                NRainhasUtil.tabuleiro(tabuleiro, ps, contadorSolucoes);
+            // if(contadorSolucoes == 1)
 
             return true;
         }

@@ -54,8 +54,8 @@ public class NRainhasSequencial {
         if (col >= n) {
             contadorSolucoes++;
             // Para mostrar a primeira solução
-            if (contadorSolucoes == 1)
-                NRainhasUtil.tabuleiro(tabuleiro, ps, contadorSolucoes);
+            //if (contadorSolucoes == 1)
+            NRainhasUtil.tabuleiro(tabuleiro, ps, contadorSolucoes);
 
             return true;
         }

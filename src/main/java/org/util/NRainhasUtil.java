@@ -36,6 +36,7 @@ public class NRainhasUtil {
     // Método para imprimir o tabuleiro com as rainhas
     public static void tabuleiro(int[][] tabuleiro, PrintWriter ps, int contadorSolucoes) {
         int N = tabuleiro.length;
+        
         ps.println("Solução " + contadorSolucoes + ":");
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
